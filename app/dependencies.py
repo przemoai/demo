@@ -1,5 +1,5 @@
 from fastapi import Request
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
 from redis.asyncio import Redis
 
 
@@ -7,5 +7,5 @@ def get_redis(request: Request) -> Redis:
     return request.app.state.redis
 
 
-def get_mongo_db(request: Request) -> AsyncIOMotorDatabase:
+def get_mongo_db(request: Request) -> AsyncDatabase:
     return request.app.state.mongo_db

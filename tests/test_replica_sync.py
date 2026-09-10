@@ -11,7 +11,7 @@ import json
 import os
 
 import pytest
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 from redis.asyncio import Redis
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
@@ -97,9 +97,7 @@ async def test_cart_change_is_broadcast_on_the_pubsub_channel(
     pubsub = redis.pubsub()
     await pubsub.subscribe("cart-events")
     try:
-        await replica1.post(
-            f"/cart/{user_id}/items", json={"product_id": "p2", "quantity": 1}
-        )
+        await replica1.post(f"/cart/{user_id}/items", json={"product_id": "p2", "quantity": 1})
 
         event = None
         async with asyncio.timeout(5):

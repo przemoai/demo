@@ -48,9 +48,7 @@ async def add_replica_header(
 
 
 @app.exception_handler(ProductNotFoundError)
-async def product_not_found_handler(
-    _request: Request, exc: ProductNotFoundError
-) -> JSONResponse:
+async def product_not_found_handler(_request: Request, exc: ProductNotFoundError) -> JSONResponse:
     return JSONResponse(status_code=404, content={"detail": str(exc)})
 
 

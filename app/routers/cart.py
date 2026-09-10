@@ -21,7 +21,5 @@ async def add_item(
 
 
 @router.delete("/{user_id}/items/{product_id}", response_model=Cart)
-async def remove_item(
-    user_id: str, product_id: str, redis: Redis = Depends(get_redis)
-) -> Cart:
+async def remove_item(user_id: str, product_id: str, redis: Redis = Depends(get_redis)) -> Cart:
     return await cart_service.remove_item(redis, user_id, product_id)

@@ -95,7 +95,7 @@ tests/               Integration tests against the live Docker stack
 Requires Docker and Docker Compose.
 
 ```bash
-cp .env .env   # optional, only needed for non-Docker local runs
+cp .env.example .env   # optional, only needed for non-Docker local runs
 docker compose up --build
 ```
 

@@ -12,7 +12,7 @@ from collections.abc import AsyncIterator
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 REPLICA1_URL = os.environ.get("REPLICA1_URL", "http://localhost:8001")
 REPLICA2_URL = os.environ.get("REPLICA2_URL", "http://localhost:8002")
