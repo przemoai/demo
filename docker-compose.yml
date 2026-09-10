@@ -1,0 +1,66 @@
+name: cart-poc
+
+x-api-common: &api-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  environment:
+    REDIS_URL: redis://redis:6379/0
+    MONGODB_URL: mongodb://mongo:27017
+    MONGODB_DATABASE: cart_poc
+    LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  depends_on:
+    redis:
+      condition: service_healthy
+    mongo:
+      condition: service_healthy
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api1:
+    <<: *api-common
+    container_name: cart-poc-api1
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URL: mongodb://mongo:27017
+      MONGODB_DATABASE: cart_poc
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      REPLICA_ID: replica-1
+    ports:
+      - "8001:8000"
+
+  api2:
+    <<: *api-common
+    container_name: cart-poc-api2
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URL: mongodb://mongo:27017
+      MONGODB_DATABASE: cart_poc
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      REPLICA_ID: replica-2
+    ports:
+      - "8002:8000"
+
+volumes:
+  mongo-data:
