@@ -19,8 +19,11 @@ def _cart_key(user_id: str) -> str:
 
 
 async def _raw_cart(redis: Redis, user_id: str) -> dict[str, int]:
-    raw = await redis.hgetall(_cart_key(user_id))  # type: ignore[misc]
-    return {product_id: int(quantity) for product_id, quantity in raw.items()}
+    raw = await redis.hgetall(_cart_key(user_id))
+    cart: dict[str, int] = dict()
+    for product_id, quantity in raw.items():
+        cart[str(product_id)] = int(quantity)
+    return cart
 
 
 async def get_cart(redis: Redis, user_id: str) -> Cart:
@@ -54,7 +57,7 @@ async def add_item(redis: Redis, user_id: str, product_id: str, quantity: int) -
 
 
 async def remove_item(redis: Redis, user_id: str, product_id: str) -> Cart:
-    await redis.hdel(_cart_key(user_id), product_id)  # type: ignore[misc]
+    await redis.hdel(_cart_key(user_id), product_id)
     logger.info("cart updated: user=%s removed product=%s", user_id, product_id)
     await publish_cart_event(redis, event="item_removed", user_id=user_id, product_id=product_id)
     return await get_cart(redis, user_id)
