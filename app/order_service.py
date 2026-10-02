@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from pymongo.asynchronous.database import AsyncDatabase
-from redis.asyncio import Redis
+from valkey.asyncio import Valkey
 
 from app.cart_service import clear_cart, get_cart
 from app.errors import EmptyCartError
@@ -14,8 +14,8 @@ from app.models import Order, OrderItem
 logger = logging.getLogger(__name__)
 
 
-async def create_order(db: AsyncDatabase, redis: Redis, user_id: str) -> Order:
-    cart = await get_cart(redis, user_id)
+async def create_order(db: AsyncDatabase, valkey: Valkey, user_id: str) -> Order:
+    cart = await get_cart(valkey, user_id)
     if not cart.items:
         raise EmptyCartError(user_id)
 
@@ -38,7 +38,7 @@ async def create_order(db: AsyncDatabase, redis: Redis, user_id: str) -> Order:
     await db.orders.insert_one(order.model_dump(mode="json"))
     logger.info("order created: order_id=%s user=%s total=%s", order.order_id, user_id, order.total)
 
-    await clear_cart(redis, user_id)
+    await clear_cart(valkey, user_id)
     return order
 
 

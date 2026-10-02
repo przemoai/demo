@@ -1,7 +1,7 @@
 """Integration test fixtures.
 
 These tests exercise the real, Dockerized stack (`docker compose up`) over
-HTTP against both replicas, rather than mocking Redis/Mongo away — the
+HTTP against both replicas, rather than mocking Valkey/Mongo away — the
 whole point of this POC is the cross-replica behavior, so the tests talk
 to it exactly like a real client would.
 """

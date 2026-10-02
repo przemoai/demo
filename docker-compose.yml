@@ -5,23 +5,25 @@ x-api-common: &api-common
     context: .
     dockerfile: Dockerfile
   environment:
-    REDIS_URL: redis://redis:6379/0
+    # REDIS_URL keeps its historical name for backward compatibility; it
+    # points at the `valkey` service below (valkey-py accepts valkey://).
+    REDIS_URL: valkey://valkey:6379/0
     MONGODB_URL: mongodb://mongo:27017
     MONGODB_DATABASE: cart_poc
     LOG_LEVEL: ${LOG_LEVEL:-INFO}
   depends_on:
-    redis:
+    valkey:
       condition: service_healthy
     mongo:
       condition: service_healthy
 
 services:
-  redis:
-    image: redis:8-alpine
+  valkey:
+    image: valkey/valkey:9.1.2-alpine
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -42,7 +44,7 @@ services:
     <<: *api-common
     container_name: cart-poc-api1
     environment:
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: valkey://valkey:6379/0
       MONGODB_URL: mongodb://mongo:27017
       MONGODB_DATABASE: cart_poc
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
@@ -54,7 +56,7 @@ services:
     <<: *api-common
     container_name: cart-poc-api2
     environment:
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: valkey://valkey:6379/0
       MONGODB_URL: mongodb://mongo:27017
       MONGODB_DATABASE: cart_poc
       LOG_LEVEL: ${LOG_LEVEL:-INFO}

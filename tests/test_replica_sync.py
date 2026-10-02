@@ -2,7 +2,7 @@
 
 This is the most important test module in the POC: it proves that a cart
 change made through one API replica is immediately visible through the
-other, and that the Redis Pub/Sub channel described in the architecture is
+other, and that the Valkey Pub/Sub channel described in the architecture is
 actually carrying the corresponding event.
 """
 
@@ -12,8 +12,10 @@ import os
 
 import pytest
 from httpx2 import AsyncClient
-from redis.asyncio import Redis
+from valkey.asyncio import Valkey
 
+# REDIS_URL kept as the env var name for backward compatibility; valkey-py
+# accepts the redis:// scheme natively (see app.valkey_client).
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 
 
@@ -92,9 +94,9 @@ async def test_replicas_handle_requests_independently(
 async def test_cart_change_is_broadcast_on_the_pubsub_channel(
     replica1: AsyncClient, user_id: str
 ) -> None:
-    """Directly observe the Redis Pub/Sub event described in the README."""
-    redis: Redis = Redis.from_url(REDIS_URL, decode_responses=True)
-    pubsub = redis.pubsub()
+    """Directly observe the Valkey Pub/Sub event described in the README."""
+    valkey: Valkey = Valkey.from_url(REDIS_URL, decode_responses=True)
+    pubsub = valkey.pubsub()
     await pubsub.subscribe("cart-events")
     try:
         await replica1.post(f"/cart/{user_id}/items", json={"product_id": "p2", "quantity": 1})
@@ -116,4 +118,4 @@ async def test_cart_change_is_broadcast_on_the_pubsub_channel(
     finally:
         await pubsub.unsubscribe("cart-events")
         await pubsub.aclose()
-        await redis.aclose()
+        await valkey.aclose()

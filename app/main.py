@@ -10,8 +10,8 @@ from app.errors import EmptyCartError, ProductNotFoundError
 from app.events import start_subscriber_task
 from app.logging_config import configure_logging
 from app.mongo_client import mongo_lifespan
-from app.redis_client import redis_lifespan
 from app.routers import cart, orders, products
+from app.valkey_client import valkey_lifespan
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
-    async with redis_lifespan() as redis, mongo_lifespan() as mongo_db:
-        app.state.redis = redis
+    async with valkey_lifespan() as valkey, mongo_lifespan() as mongo_db:
+        app.state.valkey = valkey
         app.state.mongo_db = mongo_db
-        subscriber_task = start_subscriber_task(redis)
+        subscriber_task = start_subscriber_task(valkey)
         logger.info("replica '%s' started and subscribed to cart events", settings.replica_id)
         try:
             yield
